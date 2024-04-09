@@ -1,4 +1,20 @@
 import {SupportedProviders, Web3APISpec, EIP1193Provider} from 'web3';
+import type { W3mFrameProvider } from '@web3modal/wallet'
+
+
+export interface RequestArguments {
+  readonly method: string
+  readonly params?: readonly unknown[] | object
+}
+
+export interface Provider {
+  request: <T>(args: RequestArguments) => Promise<T>
+  on: <T>(event: string, listener: (data: T) => void) => void
+  removeListener: <T>(event: string, listener: (data: T) => void) => void
+  emit: (event: string) => void
+}
+
+export type CombinedProvider = W3mFrameProvider & Provider
 
 export type Chain = {
     chainId: number,

@@ -43,7 +43,6 @@ export function defaultConfig(options: ConfigOptions) {
       return undefined
     }
 
-    //  @ts-expect-error window.ethereum satisfies Provider
     injectedProvider = window.ethereum
 
     return injectedProvider
@@ -61,8 +60,7 @@ export function defaultConfig(options: ConfigOptions) {
     const coinbaseWallet = new CoinbaseWalletSDK({
       appName: metadata.name,
       appLogoUrl: metadata.icons[0],
-      darkMode: false,
-      enableMobileWalletLink: true
+      darkMode: false
     })
 
     coinbaseProvider = coinbaseWallet.makeWeb3Provider(rpcUrl, defaultChainId)

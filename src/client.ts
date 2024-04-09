@@ -19,12 +19,12 @@ import type { Web3ModalSIWEClient } from '@web3modal/siwe'
 import { W3mFrameHelpers, W3mFrameRpcConstants } from '@web3modal/wallet'
 import Web3, {SupportedProviders, Address, EIP1193Provider, Eip1193Compatible} from 'web3';
 import { Web3Wallet } from './utils/web3Wallet'
-import {Chain, Metadata, ProviderType, Eip6963ProvidersMap} from './utils/types';
+import {Chain, Metadata, ProviderType, Eip6963ProvidersMap, CombinedProvider} from './utils/types';
 import { Web3StoreUtil } from './scaffold-utils/web3StoreUtil';
 import { ConstantsUtil } from './scaffold-utils/ConstantsUtil';
 import { HelpersUtil as Web3HelpersUtil} from './scaffold-utils/HelpersUtil';
-import { CombinedProvider } from './scaffold-utils/web3TypesUtil';
 
+export type Web3ModalOptions = Omit<Web3ModalClientOptions, '_sdkVersion'>;
 
 export interface Web3ModalClientOptions extends Omit<LibraryOptions, 'defaultChain' | 'tokens'> {
 	web3Config: ProviderType
@@ -68,7 +68,7 @@ export class Web3Modal extends Web3ModalScaffold {
 
 	private walletConnectProviderInitPromise?: Promise<void>
 
-  private EIP6963Providers: SupportedProviders[] = []
+  private EIP6963Providers: {provider: SupportedProviders, name: string}[] = []
 
 	private metadata?: Metadata
 
@@ -214,7 +214,7 @@ export class Web3Modal extends Web3ModalScaffold {
       },
 
       disconnect: async () => {
-        const provider = Web3StoreUtil.state.provider
+        const provider = Web3StoreUtil.state.provider as CombinedProvider;
         const providerType = Web3StoreUtil.state.providerType
         localStorage.removeItem(ConstantsUtil.WALLET_ID)
         Web3StoreUtil.reset()
@@ -287,13 +287,8 @@ export class Web3Modal extends Web3ModalScaffold {
 
 	  if (web3Config.EIP6963) {
       if (typeof window !== 'undefined') {
-        const currentActiveWallet = window?.localStorage.getItem(ConstantsUtil.WALLET_ID)
-        let providers = await Web3.requestEIP6963Providers() as Eip6963ProvidersMap;
-        for (const [_, value] of providers) {
-          if (value.info.name === currentActiveWallet){
-            this.setEIP6963Provider(value.provider as Eip1193Compatible, value.info.name)
-          }
-        }
+        this.listenConnectors(web3Config.EIP6963);
+        this.checkActive6963Provider()
       };
 	  }
   
@@ -304,6 +299,28 @@ export class Web3Modal extends Web3ModalScaffold {
 	  if (web3Config.injected) {
 		this.checkActiveInjectedProvider(web3Config)
 	  }
+  }
+
+
+  public async disconnect() {
+    const { provider, providerType } = Web3StoreUtil.state
+
+    localStorage.removeItem(ConstantsUtil.WALLET_ID)
+    Web3StoreUtil.reset()
+
+    if (providerType === 'injected' || providerType === 'eip6963') {
+      (provider as CombinedProvider)?.emit('disconnect')
+    } else {
+      const walletConnectProvider = provider as unknown as EthereumProvider
+      if (walletConnectProvider) {
+        try {
+          Web3StoreUtil.setError(undefined)
+          await walletConnectProvider.disconnect()
+        } catch (error) {
+          Web3StoreUtil.setError(error)
+        }
+      }
+    }
   }
 
 
@@ -411,6 +428,44 @@ export class Web3Modal extends Web3ModalScaffold {
       } else {
         super.setLoading(false)
       }
+    }
+  }
+
+
+  private eip6963EventHandler(event: CustomEventInit<Wallet>) {
+    if (event.detail) {
+      const { info, provider } = event.detail
+      const connectors = this.getConnectors()
+      const existingConnector = connectors.find(c => c.name === info.name)
+      if (!existingConnector) {
+        const type = PresetsUtil.ConnectorTypesMap[ConstantsUtil.EIP6963_CONNECTOR_ID]
+        if (type) {
+          this.addConnector({
+            id: ConstantsUtil.EIP6963_CONNECTOR_ID,
+            type,
+            imageUrl:
+              info.icon ?? this.options?.connectorImages?.[ConstantsUtil.EIP6963_CONNECTOR_ID],
+            name: info.name,
+            provider,
+            info
+          })
+
+          const eip6963ProviderObj = {
+            name: info.name,
+            provider
+          }
+
+          this.EIP6963Providers.push(eip6963ProviderObj)
+        }
+      }
+    }
+  }
+
+  private listenConnectors(enableEIP6963: boolean) {
+    if (typeof window !== 'undefined' && enableEIP6963) {
+      const handler = this.eip6963EventHandler.bind(this)
+      window.addEventListener(ConstantsUtil.EIP6963_ANNOUNCE_EVENT, handler)
+      window.dispatchEvent(new Event(ConstantsUtil.EIP6963_REQUEST_EVENT))
     }
   }
 
@@ -625,6 +680,19 @@ export class Web3Modal extends Web3ModalScaffold {
     }
 
     this.setConnectors(w3mConnectors)
+  }
+
+
+  private checkActive6963Provider() {
+    const currentActiveWallet = window?.localStorage.getItem(ConstantsUtil.WALLET_ID)
+    if (currentActiveWallet) {
+      const currentProvider = this.EIP6963Providers.find(
+        provider => provider.name === currentActiveWallet
+      )
+      if (currentProvider) {
+        this.setEIP6963Provider(currentProvider.provider as Eip1193Compatible, currentProvider.name)
+      }
+    }
   }
 
   private syncRequestedNetworks(
@@ -925,7 +993,7 @@ private async checkActiveWalletConnectProvider() {
     if (WalletConnectProvider) {
       Web3StoreUtil.setChainId(WalletConnectProvider.chainId)
       Web3StoreUtil.setProviderType('walletConnect')
-      Web3StoreUtil.setProvider(WalletConnectProvider as Eip1193Compatible)
+      Web3StoreUtil.setProvider(WalletConnectProvider as unknown as CombinedProvider)
       Web3StoreUtil.setIsConnected(true)
       Web3StoreUtil.setAddress(WalletConnectProvider.accounts?.[0])
       this.watchWalletConnect()

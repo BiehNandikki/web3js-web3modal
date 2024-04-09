@@ -1,7 +1,7 @@
 import { subscribeKey as subKey } from 'valtio/utils'
 import { proxy, ref, subscribe as sub } from 'valtio/vanilla'
 import { Eip1193Compatible } from 'web3';
-import type { Address, CombinedProvider, Provider } from './web3TypesUtil'
+import type { CombinedProvider } from '../utils/types'
 
 // -- Types --------------------------------------------- //
 
