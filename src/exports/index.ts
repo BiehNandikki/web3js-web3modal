@@ -1,7 +1,7 @@
 import type { Web3ModalOptions } from '../client.js'
 import { Web3Modal } from '../client.js'
 import { ConstantsUtil } from '@web3modal/scaffold-utils'
-
+export { Chain } from '../utils/types.js'
 export type { Web3Modal, Web3ModalOptions } from '../client.js'
 export { defaultConfig } from '../utils/defaultConfig.js'
 

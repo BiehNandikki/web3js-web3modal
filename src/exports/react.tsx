@@ -9,6 +9,7 @@ import { useSnapshot } from 'valtio'
 import {Eip1193Compatible} from 'web3';
 // import type { Eip1193Provider } from 'ethers'
 
+export { Chain } from '../utils/types.js'
 // -- Types -------------------------------------------------------------------
 export type { Web3ModalOptions } from '../client.js'
 
