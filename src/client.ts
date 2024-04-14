@@ -1,4 +1,4 @@
-import { 
+import type { 
   LibraryOptions,
 	Token,
 	NetworkControllerClient,
@@ -17,9 +17,14 @@ import { PresetsUtil } from '@web3modal/scaffold-utils'
 import { Web3ModalScaffold } from '@web3modal/scaffold';
 import type { Web3ModalSIWEClient } from '@web3modal/siwe'
 import { W3mFrameHelpers, W3mFrameRpcConstants } from '@web3modal/wallet'
-import Web3, {SupportedProviders, Address, EIP1193Provider, Eip1193Compatible} from 'web3';
+import { Web3 } from 'web3';
+// @TODO: to be updated
+// @ts-expect-error: EIP1193Provider is declared but never used
+import type  {SupportedProviders, Address, EIP1193Provider, Eip1193Compatible} from 'web3';
 import { Web3Wallet } from './utils/web3Wallet'
-import {Chain, Metadata, ProviderType, Eip6963ProvidersMap, CombinedProvider} from './utils/types';
+// @TODO: to be updated
+// @ts-expect-error: Eip6963ProvidersMap is declared but never used
+import type {Chain, Metadata, ProviderType, Eip6963ProvidersMap, CombinedProvider} from './utils/types';
 import { Web3StoreUtil } from './scaffold-utils/web3StoreUtil';
 import { ConstantsUtil } from './scaffold-utils/ConstantsUtil';
 import { HelpersUtil as Web3HelpersUtil} from './scaffold-utils/HelpersUtil';
@@ -863,7 +868,7 @@ export class Web3Modal extends Web3ModalScaffold {
       return { isDeployed: false }
     }
 
-    return await this.emailProvider.initSmartAccount()
+    return await (this.emailProvider as any).initSmartAccount() // @TODO: to remove casting to any
   }
 
   private async setInjectedProvider(config: ProviderType) {
@@ -931,7 +936,7 @@ export class Web3Modal extends Web3ModalScaffold {
       showQrModal: false,
       rpcMap: this.chains
         ? this.chains.reduce<Record<number, string>>((map, chain) => {
-            map[chain.chainId] = chain.rpcUrls[0]
+            map[chain.chainId] = chain.rpcUrls[0] as string // @TODO: to be changed to `map[chain.chainId] = chain.rpcUrl` after updating the type 
 
             return map
           }, {})
@@ -961,13 +966,15 @@ private async checkActiveWalletConnectProvider() {
     }
   }
 
+  // @TODO: to be updated
+  // @ts-expect-error: declared but its value is never read
   private async disconnectHandler() {
     localStorage.removeItem(ConstantsUtil.WALLET_ID)
     Web3StoreUtil.reset()
   }
 
-  
-
+  // @TODO: to be updated
+  // @ts-expect-error: declared but its value is never read
   private async accountsChangedHandler(accounts: string[]) {
     const currentAccount = accounts?.[0];
     if (currentAccount) {
@@ -978,6 +985,8 @@ private async checkActiveWalletConnectProvider() {
     }
   }
 
+  // @TODO: to be updated
+  // @ts-expect-error: declared but its value is never read
   private async chainChangedHandler(chainId: string) {
     if (chainId) {
       Web3StoreUtil.setChainId(Number(this.web3Wallet.web3.utils.toNumber(chainId)));

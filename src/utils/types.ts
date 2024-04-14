@@ -1,4 +1,4 @@
-import {SupportedProviders, Web3APISpec, EIP1193Provider} from 'web3';
+import type {SupportedProviders, Web3APISpec, EIP1193Provider} from 'web3';
 import type { W3mFrameProvider } from '@web3modal/wallet'
 
 

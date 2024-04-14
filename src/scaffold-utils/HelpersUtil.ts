@@ -1,8 +1,10 @@
 import type { CaipNetworkId, Tokens, CaipNetwork } from '@web3modal/core'
+// @TODO: to be updated
+// @ts-expect-error: declared but never used
 import type { W3mFrameProvider } from '@web3modal/wallet'
 import { PresetsUtil } from '@web3modal/scaffold-utils';
 import { ConstantsUtil } from './ConstantsUtil.js'
-import { Chain } from '../utils/types.js';
+import type { Chain } from '../utils/types.js';
 
 export const HelpersUtil = {
   caipNetworkIdToNumber(caipnetworkId?: CaipNetworkId) {

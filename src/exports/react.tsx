@@ -6,10 +6,12 @@ import { ConstantsUtil } from '@web3modal/scaffold-utils'
 import { EthersStoreUtil } from '@web3modal/scaffold-utils/ethers'
 import { getWeb3Modal } from '@web3modal/scaffold-react'
 import { useSnapshot } from 'valtio'
-import {Eip1193Compatible} from 'web3';
+// @TODO: to be updated
+// @ts-expect-error: Eip6963ProvidersMap is declared but never used
+import {Eip1193Compatible} from 'web3'
 // import type { Eip1193Provider } from 'ethers'
 
-export { Chain } from '../utils/types.js'
+export type { Chain } from '../utils/types.js'
 // -- Types -------------------------------------------------------------------
 export type { Web3ModalOptions } from '../client.js'
 
@@ -20,7 +22,8 @@ export function createWeb3Modal(options: Web3ModalOptions) {
   if (!modal) {
     modal = new Web3Modal({
       ...options,
-      _sdkVersion: `react-ethers-${ConstantsUtil.VERSION}`
+      // @TODO: remove casting to any after updating web3modal types
+      _sdkVersion: `react-web3js-${ConstantsUtil.VERSION}` as any
     })
   }
   getWeb3Modal(modal)

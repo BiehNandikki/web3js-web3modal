@@ -1,6 +1,7 @@
 
-import Web3, {SupportedProviders} from 'web3';
-import { Chain } from './types';
+import { Web3 } from 'web3';
+import { type SupportedProviders} from 'web3';
+import type { Chain } from './types';
 declare module 'web3' {
 	interface Web3Context {
         switchEthereumChain(chainId:String): Promise<null>;
